@@ -1,7 +1,11 @@
 import axios from "axios";
 import { clearCache } from "./cache";
 
-const api = axios.create({ baseURL: "/api" });
+const API_URL = import.meta.env.VITE_API_URL;
+
+const api = axios.create({
+  baseURL: `${API_URL}/api`,
+});
 
 // Login / signup / reset calls can legitimately return 401 - don't treat those as "session expired".
 const AUTH_PATHS = ["/auth/login", "/auth/register", "/auth/forgot-password", "/auth/reset-password"];
