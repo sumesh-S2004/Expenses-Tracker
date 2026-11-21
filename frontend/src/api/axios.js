@@ -1,10 +1,15 @@
 import axios from "axios";
 import { clearCache } from "./cache";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://expenses-tracker-backend-zrye.onrender.com";
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // Login and signup paths
@@ -15,6 +20,7 @@ const AUTH_PATHS = [
   "/auth/reset-password",
 ];
 
+// Request interceptor
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("wealthflow_token");
 
@@ -25,6 +31,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Response interceptor
 api.interceptors.response.use(
   (res) => {
     if ((res.config.method || "get").toLowerCase() !== "get") {
@@ -36,9 +43,7 @@ api.interceptors.response.use(
   (err) => {
     const url = err.config?.url || "";
 
-    const isAuthCall = AUTH_PATHS.some((p) =>
-      url.startsWith(p)
-    );
+    const isAuthCall = AUTH_PATHS.some((p) => url.startsWith(p));
 
     if (
       err.response?.status === 401 &&
