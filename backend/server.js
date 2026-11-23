@@ -20,7 +20,18 @@ const app = express();
 connectDB();
 
 app.use(compression());
-app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
+//app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
+
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://expenses-tracker-w11y.vercel.app"
+  ],
+  credentials: true
+}));
+
+
 app.use(express.json());
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));

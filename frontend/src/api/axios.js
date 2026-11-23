@@ -1,9 +1,7 @@
 import axios from "axios";
 import { clearCache } from "./cache";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://expenses-tracker-backend-zrye.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,

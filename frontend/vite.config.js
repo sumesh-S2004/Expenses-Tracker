@@ -3,19 +3,13 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-
   server: {
-    port: 5173,
-    host: true,
-  },
-
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          react: ["react", "react-dom", "react-router-dom"],
-          charts: ["recharts"],
-        },
+    port:3000,
+    proxy: {
+      "/api": {
+        target: "https://expenses-tracker-kyw7.onrender.com",
+        changeOrigin: true,
+        secure: true,
       },
     },
   },
