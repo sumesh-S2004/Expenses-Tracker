@@ -24,6 +24,24 @@ function signToken(userId) {
   });
 }
 
+function jwtConfigError() {
+  try {
+    signToken("configuration-check");
+    return null;
+  } catch (err) {
+    return err;
+  }
+}
+
+function rejectIfJwtMisconfigured(res) {
+  const err = jwtConfigError();
+  if (!err) return false;
+
+  console.error("JWT configuration error:", err.message);
+  res.status(503).json({ message: "Authentication is not configured correctly on the server." });
+  return true;
+}
+
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -35,6 +53,7 @@ exports.register = async (req, res) => {
     if (phone && !PHONE_RE.test(phone)) {
       return res.status(400).json({ message: "Enter a valid mobile number (7-15 digits)." });
     }
+    if (rejectIfJwtMisconfigured(res)) return;
 
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) {
@@ -48,6 +67,10 @@ exports.register = async (req, res) => {
     const token = signToken(user._id);
     res.status(201).json({ token, user: user.toSafeObject() });
   } catch (err) {
+    console.error("Account registration failed:", err);
+    if (err.code === 11000) {
+      return res.status(409).json({ message: "An account with this email already exists." });
+    }
     res.status(500).json({ message: "Could not create account.", error: err.message });
   }
 };
@@ -58,6 +81,7 @@ exports.login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required." });
     }
+    if (rejectIfJwtMisconfigured(res)) return;
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
@@ -72,6 +96,7 @@ exports.login = async (req, res) => {
     const token = signToken(user._id);
     res.json({ token, user: user.toSafeObject() });
   } catch (err) {
+    console.error("Login failed:", err);
     res.status(500).json({ message: "Could not log in.", error: err.message });
   }
 };
@@ -82,6 +107,7 @@ exports.googleLogin = async (req, res) => {
   if (!process.env.GOOGLE_CLIENT_ID) {
     return res.status(500).json({ message: "Google sign-in is not configured on the server (GOOGLE_CLIENT_ID)." });
   }
+  if (rejectIfJwtMisconfigured(res)) return;
 
   let payload;
   try {
@@ -111,7 +137,12 @@ exports.googleLogin = async (req, res) => {
     await user.save();
   }
 
-  res.json({ token: signToken(user._id), user: user.toSafeObject() });
+  try {
+    res.json({ token: signToken(user._id), user: user.toSafeObject() });
+  } catch (err) {
+    console.error("Google sign-in failed:", err);
+    res.status(500).json({ message: "Could not complete Google sign-in." });
+  }
 };
 
 exports.getMe = async (req, res) => {
