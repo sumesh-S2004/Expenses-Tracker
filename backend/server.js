@@ -23,11 +23,28 @@ app.use(compression());
 //app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 
 app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "https://expenses-tracker-w11y.vercel.app"
-  ],
+  origin(origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "https://expenses-tracker-w11y.vercel.app",
+      "https://expenses-tracker-delta-five.vercel.app",
+      process.env.CLIENT_URL
+    ].filter(Boolean).map((url) => {
+      try {
+        return new URL(url).origin;
+      } catch {
+        return url.replace(/\/+$/, "");
+      }
+    });
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error("Origin not allowed by CORS"));
+  },
   credentials: true
 }));
 
