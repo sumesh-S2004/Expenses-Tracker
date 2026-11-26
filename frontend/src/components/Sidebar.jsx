@@ -1,8 +1,9 @@
+// new
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutGrid, ArrowLeftRight, Grid3x3, BarChart3, Wallet, Target,
-  Calendar, FileText, Settings, PiggyBank, LogOut,
+  Calendar, FileText, Settings, PiggyBank, LogOut, X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { prefetchRoute } from "../api/prefetch";
@@ -22,7 +23,7 @@ const navItems = [
   { label: "Settings", icon: Settings, path: "/settings" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ open = false, onClose = () => {} }) {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();
 
@@ -30,11 +31,11 @@ export default function Sidebar() {
 
   return (
     <aside
+      className={`app-sidebar${open ? " open" : ""}`}
       style={{
         width: 240, flexShrink: 0, boxSizing: "border-box", position: "sticky", top: 0, height: "100vh",
         background: "var(--sidebar)", borderRight: "1px solid var(--border)", padding: "20px 16px",
         display: "flex", flexDirection: "column", justifyContent: "space-between",
-        transition: "background-color .25s ease, border-color .25s ease",
       }}
     >
       <div>
@@ -47,10 +48,11 @@ export default function Sidebar() {
           >
             <PiggyBank size={18} color="#ffffff" />
           </div>
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14.5, fontWeight: 600, color: "var(--text-strong)" }}>WealthFlow</div>
             <div style={{ fontSize: 11, color: "var(--muted-2)" }}>Expense Tracker</div>
           </div>
+          <button type="button" className="sidebar-close" onClick={onClose} aria-label="Close menu"><X size={20} /></button>
         </div>
 
         <nav style={{ position: "relative", display: "flex", flexDirection: "column", gap: GAP }}>
@@ -72,8 +74,8 @@ export default function Sidebar() {
               style={{ height: ITEM_H }}
               onMouseEnter={() => prefetchRoute(item.path)}
             >
-              <item.icon size={17} />
-              {item.label}
+              <span className="nav-icon"><item.icon size={18} /></span>
+              <span className="nav-label">{item.label}</span>
             </NavLink>
           ))}
         </nav>

@@ -1,3 +1,4 @@
+// new
 import React from "react";
 
 export const tooltipStyle = {
@@ -22,6 +23,7 @@ export const td = { padding: "12px 16px 12px 0", verticalAlign: "middle" };
 export function Card({ title, right, children, style }) {
   return (
     <div
+      className="ui-card"
       style={{
         background: "var(--card)",
         border: "1px solid var(--border)",
