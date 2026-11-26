@@ -1,10 +1,11 @@
+//new new
 import React, { useState } from "react";
 import { Plus, Pencil, Trash2, Tag } from "lucide-react";
 import api from "../api/axios";
 import { useApi } from "../api/useApi";
 import Modal, { inputStyle, labelStyle, PrimaryButton, GhostButton } from "../components/Modal";
 import ColorPicker, { SWATCHES } from "../components/ColorPicker";
-import { PageHeader, Skeleton, ErrorBanner, IconButton } from "../components/ui";
+import { PageHeader, Skeleton, ErrorBanner } from "../components/ui";
 
 const emptyForm = { name: "", type: "expense", color: SWATCHES[0] };
 const tint = (c) => `color-mix(in srgb, ${c} 18%, transparent)`;
@@ -64,7 +65,7 @@ export default function Categories() {
     return (
       <div style={{ marginBottom: 22 }}>
         <div style={{ fontSize: 13.5, color: "var(--muted)", marginBottom: 10 }}>{title} ({list.length})</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(220px, 100%), 1fr))", gap: 12 }}>
           {list.map((cat) => (
             <div key={cat._id} style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -73,25 +74,14 @@ export default function Categories() {
                 </div>
                 <div style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: "var(--text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{cat.name}</div>
               </div>
-              
-
-
-<div>
-  <button
-    onClick={() => openEdit(category)}
-  >
-    Edit
-  </button>
-</div>
-
-
-          {/*  </div>   <div style={{ XButton label="Edit" onClick={() => openEdit(cat)}><Pencil size={15} color="var(--muted)" /></IconButton>
-                <IconButton label="Delete" danger onClick={() => remove(cat._id)}><Trash2 size={15} color="var(--red)" /></IconButton>
-              </div> */}
-
-
-
-              
+              <div className="cat-actions">
+                <button type="button" className="cat-btn" onClick={() => openEdit(cat)} aria-label={`Edit ${cat.name}`}>
+                  <Pencil size={14} /> Edit
+                </button>
+                <button type="button" className="cat-btn danger" onClick={() => remove(cat._id)} aria-label={`Delete ${cat.name}`}>
+                  <Trash2 size={14} /> Delete
+                </button>
+              </div>
             </div>
           ))}
           <button
@@ -119,7 +109,7 @@ export default function Categories() {
       <ErrorBanner message={pageError || (!data ? error : "")} />
 
       {loading ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(220px, 100%), 1fr))", gap: 12 }}>
           {[0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} h={88} r={12} />)}
         </div>
       ) : (
