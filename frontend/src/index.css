@@ -1,4 +1,4 @@
-/* new */
+/* n */
 :root,
 :root[data-theme="dark"] {
   --bg: #0a0b12;
@@ -145,6 +145,16 @@ input::placeholder { color: var(--muted-3); }
 .cat-btn.danger { color: var(--red); }
 .cat-btn.danger:hover { background: rgba(240, 87, 126, 0.14); }
 
+/* Dashboard stat cards: 4 across on desktop, 2 x 2 on phones */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.card-click { cursor: pointer; transition: border-color 0.2s ease; }
+.card-click:hover { border-color: var(--border-2); }
+
+/* Transactions: table on desktop, tap-to-edit list on phones */
+.tx-mobile { display: none; }
+.tx-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-top: 1px solid var(--track); cursor: pointer; }
+.tx-row:first-child { border-top: none; }
+
 .row-hover:hover { background: var(--hover); }
 
 /* Transactions table: rounded row highlight with a gap before the first and after the last column */
@@ -223,6 +233,15 @@ html { -webkit-text-size-adjust: 100%; }
 @media (max-width: 600px) {
   .app-main { padding: 14px 12px 28px; }
   .ui-card { padding: 16px !important; }
+  .tx-desktop { display: none; }
+  .tx-mobile { display: block; }
+  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .stat-card { padding: 14px !important; }
+  .stat-head { gap: 8px !important; margin-bottom: 10px !important; }
+  .stat-icon { width: 32px !important; height: 32px !important; }
+  .stat-label { font-size: 12.5px !important; }
+  .stat-value { font-size: 19px !important; }
+  .stat-delta { font-size: 11px !important; }
   .modal-card { padding: 18px !important; }
   .auth-card { padding: 24px !important; }
   /* 16px inputs stop iPhones zooming in when a field is tapped */

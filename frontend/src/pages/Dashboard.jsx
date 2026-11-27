@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
 import { Wallet, ArrowDownToLine, Receipt, PiggyBank, Plus, Target } from "lucide-react";
 import { useApi } from "../api/useApi";
@@ -9,7 +9,7 @@ import { inr, compactInr, formatDate, formatShort, greeting, capitalize } from "
 import { Card, PageHeader, Skeleton, ErrorBanner, tooltipStyle, tooltipItemStyle, th, td } from "../components/ui";
 import { PrimaryButton } from "../components/Modal";
 import TransactionModal from "../components/TransactionModal";
-
+// n
 const tint = (color, pct = 16) => `color-mix(in srgb, ${color} ${pct}%, transparent)`;
 
 // Card titles are links to the matching tab
@@ -25,6 +25,9 @@ export default function Dashboard() {
   const { data, loading, error, refresh } = useApi("/dashboard/overview");
   const [mode, setMode] = useState("expense");
   const [showAdd, setShowAdd] = useState(false);
+  const navigate = useNavigate();
+  // Tapping anywhere on a card opens its page (links/buttons inside keep their own action)
+  const go = (to) => (e) => { if (e.target.closest("a, button")) return; navigate(to); };
 
   const firstName = capitalize((user?.name || "there").split(" ")[0]);
   const header = (
@@ -62,7 +65,7 @@ export default function Dashboard() {
     <>
       {header}
 
-      <div style={{ display: "flex", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+      <div className="stat-grid">
         <StatCard
           label="Total Balance" value={inr(balance)} valueColor={balanceColor}
           icon={Wallet} iconBg="linear-gradient(135deg,#6C5CE7,#4C6EF5)"
@@ -116,6 +119,7 @@ export default function Dashboard() {
           title={<TitleLink to="/transactions">Recent Transactions</TitleLink>}
           right={<ViewAll to="/transactions" />}
           style={{ flex: "0.9 1 300px" }}
+          onClick={go("/transactions")}
         >
           {recent.length === 0 ? (
             <Empty text="No transactions yet." />
@@ -150,45 +154,8 @@ export default function Dashboard() {
       </div>
 
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-start" }}>
-        <Card
-          title={<TitleLink to="/transactions">All Transactions</TitleLink>}
-          right={<ViewAll to="/transactions" />}
-          style={{ flex: "2 1 480px" }}
-        >
-          {recent.length === 0 ? (
-            <Empty text="Add your first transaction to see it here." />
-          ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
-                <thead>
-                  <tr>
-                    <th style={th}>Transaction</th>
-                    <th style={th}>Category</th>
-                    <th style={th}>Date</th>
-                    <th style={{ ...th, textAlign: "right", paddingRight: 28 }}>Amount</th>
-                    <th style={th}>Method</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recent.map((t) => (
-                    <tr key={t._id} style={{ borderTop: "1px solid var(--track)" }}>
-                      <td style={{ ...td, color: "var(--text-strong)" }}>{t.title}</td>
-                      <td style={{ ...td, color: "var(--text-2)" }}>{t.category?.name}</td>
-                      <td style={{ ...td, color: "var(--muted)", whiteSpace: "nowrap" }}>{formatDate(t.date)}</td>
-                      <td style={{ ...td, textAlign: "right", paddingRight: 28, whiteSpace: "nowrap", fontWeight: 500, color: t.type === "income" ? "var(--green)" : "var(--red)" }}>
-                        {t.type === "income" ? "+ " : "- "}{inr(t.amount)}
-                      </td>
-                      <td style={{ ...td, color: "var(--muted)", whiteSpace: "nowrap" }}>{t.paymentMethod}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>
-
-        <div style={{ flex: "1 1 300px", minWidth: 0, display: "flex", flexDirection: "column", gap: 16 }}>
-          <Card title={<TitleLink to="/budgets">Budget Overview</TitleLink>} right={<ViewAll to="/budgets" />}>
+        <>
+          <Card title={<TitleLink to="/budgets">Budget Overview</TitleLink>} right={<ViewAll to="/budgets" />} style={{ flex: "1 1 300px" }} onClick={go("/budgets")}>
             {budgets.length === 0 ? (
               <Empty text="No budgets set for this month." />
             ) : (
@@ -209,7 +176,7 @@ export default function Dashboard() {
             )}
           </Card>
 
-          <Card title={<TitleLink to="/goals">Goals Overview</TitleLink>} right={<ViewAll to="/goals" />}>
+          <Card title={<TitleLink to="/goals">Goals Overview</TitleLink>} right={<ViewAll to="/goals" />} style={{ flex: "1 1 300px" }} onClick={go("/goals")}>
             {goals.length === 0 ? (
               <div style={{ color: "var(--muted-2)", fontSize: 13 }}>
                 No goals yet. <Link to="/goals" className="view-all">Add a goal</Link>
@@ -241,7 +208,7 @@ export default function Dashboard() {
               </div>
             )}
           </Card>
-        </div>
+        </>
       </div>
 
       {addModal}
@@ -259,24 +226,25 @@ function StatCard({ label, value, valueColor, icon: Icon, iconBg, delta, invert,
 
   return (
     <div
+      className="stat-card"
       style={{
-        flex: "1 1 220px", minWidth: 0, background: "var(--card)", borderRadius: 16, padding: "18px 20px",
+        minWidth: 0, background: "var(--card)", borderRadius: 16, padding: "18px 20px",
         border: `1px solid ${borderColor ? tint(borderColor, 55) : "var(--border)"}`, transition: "border-color .3s ease",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-        <div style={{ width: 38, height: 38, borderRadius: 10, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div className="stat-head" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
+        <div className="stat-icon" style={{ width: 38, height: 38, borderRadius: 10, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <Icon size={18} color="#ffffff" />
         </div>
-        <span style={{ color: "var(--muted)", fontSize: 13.5, flex: 1 }}>{label}</span>
+        <span className="stat-label" style={{ color: "var(--muted)", fontSize: 13.5, flex: 1, minWidth: 0 }}>{label}</span>
         {badge && (
           <span style={{ fontSize: 10.5, fontWeight: 600, padding: "3px 8px", borderRadius: 20, color: badge.color, background: tint(badge.color), whiteSpace: "nowrap" }}>
             {badge.text}
           </span>
         )}
       </div>
-      <div style={{ color: valueColor, fontSize: 26, fontWeight: 600, marginBottom: 6, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{value}</div>
-      <div style={{ color: deltaColor, fontSize: 12.5 }}>{deltaText}</div>
+      <div className="stat-value" style={{ color: valueColor, fontSize: 26, fontWeight: 600, marginBottom: 6, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{value}</div>
+      <div className="stat-delta" style={{ color: deltaColor, fontSize: 12.5 }}>{deltaText}</div>
     </div>
   );
 }
@@ -384,8 +352,8 @@ function DashboardSkeleton({ header }) {
   return (
     <>
       {header}
-      <div style={{ display: "flex", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
-        {[0, 1, 2, 3].map((i) => <Skeleton key={i} h={128} r={16} style={{ flex: "1 1 220px" }} />)}
+      <div className="stat-grid">
+        {[0, 1, 2, 3].map((i) => <Skeleton key={i} h={128} r={16} />)}
       </div>
       <div style={{ display: "flex", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
         <Skeleton h={260} r={16} style={{ flex: "1.2 1 400px" }} />

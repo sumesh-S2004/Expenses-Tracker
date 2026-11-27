@@ -1,9 +1,8 @@
-// new
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { IconButton } from "./ui";
-
+// n
 export default function Modal({ title, onClose, children, width = 440 }) {
   // Esc closes the popup; the page behind doesn't scroll while it's open
   useEffect(() => {

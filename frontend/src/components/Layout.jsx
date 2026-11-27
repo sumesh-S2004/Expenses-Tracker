@@ -1,7 +1,7 @@
-// new
+// n
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { MoreVertical, PiggyBank } from "lucide-react";
+import { Menu, PiggyBank } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { IconButton } from "./ui";
 
@@ -21,19 +21,38 @@ export default function Layout({ children }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [menuOpen]);
 
+  // Swipe right from the left edge to open the menu, swipe left to close it (phones)
+  useEffect(() => {
+    let x0 = null, y0 = null;
+    const start = (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; };
+    const end = (e) => {
+      if (x0 === null || window.innerWidth > 820) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      const dy = Math.abs(e.changedTouches[0].clientY - y0);
+      if (dy < 60) {
+        if (!menuOpen && x0 < 40 && dx > 70) setMenuOpen(true);
+        if (menuOpen && dx < -70) setMenuOpen(false);
+      }
+      x0 = null;
+    };
+    window.addEventListener("touchstart", start, { passive: true });
+    window.addEventListener("touchend", end, { passive: true });
+    return () => { window.removeEventListener("touchstart", start); window.removeEventListener("touchend", end); };
+  }, [menuOpen]);
+
   return (
     <div className="app-shell" style={{ display: "flex", background: "var(--bg)", minHeight: "100vh", color: "var(--text)" }}>
       <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
       <div className={`sidebar-backdrop${menuOpen ? " open" : ""}`} onClick={() => setMenuOpen(false)} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <header className="mobile-topbar">
+          <IconButton label="Open menu" onClick={() => setMenuOpen(true)}><Menu size={22} color="var(--text-strong)" /></IconButton>
           <Link to="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
             <span style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#6C5CE7,#4C8DF5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <PiggyBank size={15} color="#ffffff" />
             </span>
             <span style={{ fontSize: 15, fontWeight: 600, color: "var(--text-strong)" }}>WealthFlow</span>
           </Link>
-          <IconButton label="Open menu" onClick={() => setMenuOpen(true)} style={{ marginLeft: "auto" }}><MoreVertical size={22} color="var(--text-strong)" /></IconButton>
         </header>
         <main className="app-main">
           <div key={pathname} className="page-enter">

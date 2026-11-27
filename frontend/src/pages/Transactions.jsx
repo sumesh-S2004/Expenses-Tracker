@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Wallet, ChevronLeft, ChevronRight } from "lucide-react";
 import api from "../api/axios";
 import { useApi } from "../api/useApi";
 import { inputStyle, PrimaryButton } from "../components/Modal";
 import TransactionModal from "../components/TransactionModal";
 import { Card, PageHeader, Skeleton, ErrorBanner, IconButton, th, td } from "../components/ui";
 import { inr, formatDate } from "../utils/format";
-
+// n
 export default function Transactions() {
   const [page, setPage] = useState(1);
   const [filterCategory, setFilterCategory] = useState("");
@@ -66,7 +66,7 @@ export default function Transactions() {
       <ErrorBanner message={pageError || (!data ? error : "")} />
 
       <Card>
-        <div style={{ overflowX: "auto", opacity: fetching && data ? 0.55 : 1, transition: "opacity .2s" }}>
+        <div className="tx-desktop" style={{ overflowX: "auto", opacity: fetching && data ? 0.55 : 1, transition: "opacity .2s" }}>
           <table className="tx-table" style={{ width: "100%", fontSize: 12.5 }}>
             <thead>
               <tr>
@@ -75,6 +75,7 @@ export default function Transactions() {
                 <th style={th}>Date</th>
                 <th style={{ ...th, textAlign: "right", paddingRight: 32 }}>Amount</th>
                 <th style={th}>Method</th>
+                <th style={th}>Notes</th>
                 <th style={{ ...th, textAlign: "right", paddingRight: 14 }}>Actions</th>
               </tr>
             </thead>
@@ -82,14 +83,14 @@ export default function Transactions() {
               {loading ? (
                 [0, 1, 2, 3, 4].map((i) => (
                   <tr key={i} style={{ borderTop: "1px solid var(--track)" }}>
-                    <td colSpan={6} style={{ padding: "12px 0" }}><Skeleton h={18} /></td>
+                    <td colSpan={7} style={{ padding: "12px 0" }}><Skeleton h={18} /></td>
                   </tr>
                 ))
               ) : transactions.length === 0 ? (
-                <tr><td colSpan={6} style={{ padding: "20px 0", color: "var(--muted)" }}>No transactions found. Add your first one.</td></tr>
+                <tr><td colSpan={7} style={{ padding: "20px 0", color: "var(--muted)" }}>No transactions found. Add your first one.</td></tr>
               ) : (
                 transactions.map((t) => (
-                  <tr key={t._id}>
+                  <tr key={t._id} onClick={() => setModal({ transaction: t })} style={{ cursor: "pointer" }}>
                     <td style={{ ...td, paddingLeft: 14, color: "var(--text-strong)" }}>{t.title}</td>
                     <td style={{ ...td, color: "var(--text-2)" }}>
                       <span style={{ width: 7, height: 7, borderRadius: "50%", background: t.category?.color || "#888", display: "inline-block", marginRight: 7 }} />
@@ -100,8 +101,14 @@ export default function Transactions() {
                       {t.type === "income" ? "+ " : "- "}{inr(t.amount)}
                     </td>
                     <td style={{ ...td, color: "var(--muted)", whiteSpace: "nowrap" }}>{t.paymentMethod}</td>
+                    <td
+                      title={t.notes || ""}
+                      style={{ ...td, color: "var(--muted)", maxWidth: 200, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                    >
+                      {t.notes || "—"}
+                    </td>
                     <td style={{ ...td, padding: "6px 14px 6px 0" }}>
-                      <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }}>
+                      <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }} onClick={(e) => e.stopPropagation()}>
                         <IconButton label="Edit" onClick={() => setModal({ transaction: t })}><Pencil size={15} color="var(--muted)" /></IconButton>
                         <IconButton label="Delete" danger onClick={() => remove(t._id)}><Trash2 size={15} color="var(--red)" /></IconButton>
                       </div>
@@ -111,6 +118,35 @@ export default function Transactions() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Phone view: same compact rows as the dashboard's Recent Transactions. Tap a row to edit it. */}
+        <div className="tx-mobile" style={{ opacity: fetching && data ? 0.55 : 1, transition: "opacity .2s" }}>
+          {loading ? (
+            [0, 1, 2, 3, 4].map((i) => <Skeleton key={i} h={44} style={{ marginBottom: 14 }} />)
+          ) : transactions.length === 0 ? (
+            <div style={{ padding: "12px 0", color: "var(--muted)", fontSize: 13 }}>No transactions found. Add your first one.</div>
+          ) : (
+            transactions.map((t) => {
+              const color = t.category?.color || "#7C6FF0";
+              return (
+                <div key={t._id} className="tx-row" onClick={() => setModal({ transaction: t })}>
+                  <div style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, background: `color-mix(in srgb, ${color} 18%, transparent)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Wallet size={15} color={color} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, color: "var(--text-strong)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.title}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--muted-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.category?.name}{t.paymentMethod ? ` · ${t.paymentMethod}` : ""}</div>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: t.type === "income" ? "var(--green)" : "var(--red)" }}>{t.type === "income" ? "+ " : "- "}{inr(t.amount)}</div>
+                    <div style={{ fontSize: 10.5, color: "var(--muted-2)" }}>{formatDate(t.date)}</div>
+                  </div>
+                  <IconButton label="Delete" danger onClick={(e) => { e.stopPropagation(); remove(t._id); }}><Trash2 size={15} color="var(--red)" /></IconButton>
+                </div>
+              );
+            })
+          )}
         </div>
 
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 14 }}>

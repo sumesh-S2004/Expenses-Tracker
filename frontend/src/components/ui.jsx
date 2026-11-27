@@ -1,6 +1,5 @@
-// new
 import React from "react";
-
+// n
 export const tooltipStyle = {
   background: "var(--tooltip-bg)",
   border: "1px solid var(--border-2)",
@@ -20,10 +19,11 @@ export const th = {
 };
 export const td = { padding: "12px 16px 12px 0", verticalAlign: "middle" };
 
-export function Card({ title, right, children, style }) {
+export function Card({ title, right, children, style, onClick }) {
   return (
     <div
-      className="ui-card"
+      className={onClick ? "ui-card card-click" : "ui-card"}
+      onClick={onClick}
       style={{
         background: "var(--card)",
         border: "1px solid var(--border)",

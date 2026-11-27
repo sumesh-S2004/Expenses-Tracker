@@ -1,4 +1,3 @@
-// new
 import React, { useState } from "react";
 import { Plus, Pencil, Trash2, Tag } from "lucide-react";
 import api from "../api/axios";
@@ -9,7 +8,7 @@ import { PageHeader, Skeleton, ErrorBanner } from "../components/ui";
 
 const emptyForm = { name: "", type: "expense", color: SWATCHES[0] };
 const tint = (c) => `color-mix(in srgb, ${c} 18%, transparent)`;
-
+// n
 export default function Categories() {
   const { data, loading, error, refresh } = useApi("/categories");
   const categories = data || [];
